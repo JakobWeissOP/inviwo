@@ -27,6 +27,7 @@
  *
  *********************************************************************************/
 
+#include <inviwo/volume/processors/atlasboundary.h>
 #include <inviwo/volume/processors/volumeregionstatistics.h>
 #include <inviwo/volume/processors/volumeregionmapper.h>
 #include <inviwo/volume/processors/volumevoronoisegmentation.h>
@@ -44,6 +45,7 @@ VolumeModule::VolumeModule(InviwoApplication* app) : InviwoModule(app, "Volume")
     registerProcessor<VolumeRegionMapper>();
     registerProcessor<VolumeRegionStatistics>();
     registerProcessor<VolumeVoronoiSegmentation>();
+    registerProcessor<AtlasBoundary>();
 
     // Properties
     // registerProperty<VolumeProperty>();
