@@ -40,6 +40,7 @@ set(HEADER_FILES
     include/modules/opengl/shader/standardshaders.h
     include/modules/opengl/shader/uniformutils.h
     include/modules/opengl/sharedopenglresources.h
+    include/modules/opengl/texture/samplerobject.h
     include/modules/opengl/texture/texture.h
     include/modules/opengl/texture/texture2d.h
     include/modules/opengl/texture/texture2darray.h
@@ -88,6 +89,7 @@ set(SOURCE_FILES
     src/shader/shaderutils.cpp
     src/shader/standardshaders.cpp
     src/sharedopenglresources.cpp
+    src/texture/samplerobject.cpp
     src/texture/texture.cpp
     src/texture/texture2d.cpp
     src/texture/texture2darray.cpp
