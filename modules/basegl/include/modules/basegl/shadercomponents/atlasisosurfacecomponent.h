@@ -48,16 +48,14 @@ namespace inviwo {
  */
 class IVW_MODULE_BASEGL_API AtlasIsosurfaceComponent : public ShaderComponent {
 public:
-    AtlasIsosurfaceComponent(std::string_view volume);
+    AtlasIsosurfaceComponent(VolumeInport& atlas);
     virtual std::string_view getName() const override;
     virtual void process(Shader& shader, TextureUnitContainer&) override;
     virtual std::vector<Property*> getProperties() override;
     virtual std::vector<Segment> getSegments() override;
 
 private:
-    VolumeInport volume_;
     std::string name_;
-
     BoolCompositeProperty useAtlasBoundary_;
     BoolProperty applyBoundaryLight_;
     SelectionColorProperty showHighlighted_;
@@ -65,6 +63,8 @@ private:
     SelectionColorProperty showFiltered_;
     SamplerObject nearestSampler_;
     SamplerObject linearSampler_;
+    FloatProperty textureSpaceGradientSpacingScale_;
+    VolumeInport& atlas_;
 };
 
 }  // namespace inviwo

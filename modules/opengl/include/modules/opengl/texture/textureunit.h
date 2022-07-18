@@ -36,6 +36,8 @@
 
 namespace inviwo {
 
+class SamplerObject;
+
 class IVW_MODULE_OPENGL_API TextureUnit {
 public:
     TextureUnit();
@@ -57,8 +59,11 @@ public:
     inline void activate() const { glActiveTexture(unitEnum_); }
     inline static void setZeroUnit() { glActiveTexture(GL_TEXTURE0); }
 
+    void bindSampler(const SamplerObject& so);
+
 private:
     static std::vector<bool> textureUnits_;
+    static std::vector<GLint> samplerObjects_;
 
     GLint unitEnum_;
     GLint unitNumber_;

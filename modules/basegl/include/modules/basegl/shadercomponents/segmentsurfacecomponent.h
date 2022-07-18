@@ -2,7 +2,7 @@
  *
  * Inviwo - Interactive Visualization Workshop
  *
- * Copyright (c) 2021 Inviwo Foundation
+ * Copyright (c) 2022 Inviwo Foundation
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -26,82 +26,63 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  *********************************************************************************/
+
 #pragma once
 
 #include <modules/basegl/baseglmoduledefine.h>
+#include <inviwo/core/properties/ordinalproperty.h>
+
+#include <modules/basegl/shadercomponents/shadercomponent.h>
+#include <modules/opengl/texture/samplerobject.h>
+#include <inviwo/core/properties/selectioncolorproperty.h>
+#include <inviwo/core/properties/boolcompositeproperty.h>
+#include <inviwo/core/ports/volumeport.h>
 
 #include <modules/basegl/shadercomponents/shadercomponent.h>
 #include <modules/opengl/volume/volumeutils.h>
 #include <inviwo/core/ports/volumeport.h>
-#include <inviwo/core/properties/transferfunctionproperty.h>
 #include <inviwo/core/properties/ordinalproperty.h>
-#include <inviwo/core/properties/optionproperty.h>
-#include <inviwo/core/properties/buttongroupproperty.h>
-#include <inviwo/core/interaction/pickingmapper.h>
-#include <inviwo/core/datastructures/image/layer.h>
-#include <inviwo/core/util/colorbrewer.h>
-
-#include <modules/brushingandlinking/ports/brushingandlinkingports.h>
-
+#include <inviwo/core/properties/selectioncolorproperty.h>
+#include <inviwo/core/properties/boolcompositeproperty.h>
+#include <modules/opengl/texture/samplerobject.h>
 #include <string>
 #include <vector>
 
 namespace inviwo {
 
-class PickingEvent;
-class Processor;
-class TimeComponent;
-
-/**
- * Adds a atlas Volume inport, a BrushingAndLinking inport, and related functionality to do
- * segmented or "atlas" volume raycasting.
+/** \docpage{org.inviwo.segmentsurfacecomponent, segmentsurfacecomponent}
+ * ![](org.inviwo.segmentsurfacecomponent.png?classIdentifier=org.inviwo.segmentsurfacecomponent)
+ * Explanation of how to use the processor.
+ *
+ * ### Inports
+ *   * __<Inport1>__ <description>.
+ *
+ * ### Outports
+ *   * __<Outport1>__ <description>.
+ *
+ * ### Properties
+ *   * __<Prop1>__ <description>.
+ *   * __<Prop2>__ <description>
  */
-class IVW_MODULE_BASEGL_API AtlasComponent : public ShaderComponent {
+class IVW_MODULE_BASEGL_API SegmentSurfaceComponent : public ShaderComponent {
 public:
-    AtlasComponent(Processor* p, std::string_view color, TimeComponent* time);
-
+    SegmentSurfaceComponent(VolumeInport& atlas);
     virtual std::string_view getName() const override;
-
-    virtual void process(Shader& shader, TextureUnitContainer& cont) override;
-
-    virtual std::vector<std::tuple<Inport*, std::string>> getInports() override;
-
+    virtual void process(Shader& shader, TextureUnitContainer&) override;
     virtual std::vector<Property*> getProperties() override;
-
     virtual std::vector<Segment> getSegments() override;
 
-    void onPickingEvent(PickingEvent* e);
-
-    VolumeInport& getAtlasInport() { return atlas_; }
-
 private:
-    enum class ColoringGroup { All, Selected, Unselected, Filtered, Unfiltered, Zero };
-    enum class ColoringAction { None, SetColor, SetAlpha, SetScheme };
-
-    VolumeInport atlas_;
-    BrushingAndLinkingInport brushing_;
-
-    FloatVec3Property selectionColor_;
-    FloatProperty selectionAlpha_;
-    FloatProperty selectionMix_;
-
-    FloatVec3Property filteredColor_;
-    FloatProperty filteredAlpha_;
-    FloatProperty filteredMix_;
-
-    TransferFunctionProperty tf_;
-    OptionProperty<ColoringGroup> coloringGroup_;
-    FloatVec3Property coloringColor_;
-    FloatProperty coloringAlpha_;
-    OptionProperty<colorbrewer::Family> coloringScheme_;
-
-    ButtonGroupProperty coloringApply_;
-    ColoringAction coloringAction_;
-
-    Layer colors_;
-    std::string color_;
-    PickingMapper picking_;
-    TimeComponent* time_;
+    std::string name_;
+    BoolCompositeProperty useAtlasBoundary_;
+    BoolProperty applyBoundaryLight_;
+    SelectionColorProperty showHighlighted_;
+    SelectionColorProperty showSelected_;
+    SelectionColorProperty showFiltered_;
+    SamplerObject nearestSampler_;
+    SamplerObject linearSampler_;
+    FloatProperty textureSpaceGradientSpacingScale_;
+    VolumeInport& atlas_;
 };
 
 }  // namespace inviwo

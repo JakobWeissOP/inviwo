@@ -43,6 +43,7 @@
 #include <modules/basegl/shadercomponents/timecomponent.h>
 #include <modules/basegl/shadercomponents/volumecomponent.h>
 #include <modules/basegl/shadercomponents/entryexitcomponent.h>
+#include <modules/basegl/shadercomponents/segmentsurfacecomponent.h>
 
 #include <modules/basegl/shadercomponents/atlasisosurfacecomponent.h>
 
@@ -95,7 +96,8 @@ private:
     PositionIndicatorComponent positionIndicator_;
     SampleTransformComponent sampleTransform_;
     AtlasComponent atlas_;
-    AtlasIsosurfaceComponent atlasIso_;
+    SegmentSurfaceComponent segmentSurface_;
+    
 };
 
 }  // namespace inviwo
