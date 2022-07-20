@@ -45,8 +45,6 @@
 #include <modules/basegl/shadercomponents/entryexitcomponent.h>
 #include <modules/basegl/shadercomponents/segmentsurfacecomponent.h>
 
-#include <modules/basegl/shadercomponents/atlasisosurfacecomponent.h>
-
 namespace inviwo {
 
 /** \docpage{org.inviwo.AtlasVolumeRaycaster, Atlas Volume Raycaster}
