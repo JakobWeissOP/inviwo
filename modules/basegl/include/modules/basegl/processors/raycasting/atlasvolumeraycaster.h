@@ -95,7 +95,6 @@ private:
     SampleTransformComponent sampleTransform_;
     AtlasComponent atlas_;
     SegmentSurfaceComponent segmentSurface_;
-    
 };
 
 }  // namespace inviwo
