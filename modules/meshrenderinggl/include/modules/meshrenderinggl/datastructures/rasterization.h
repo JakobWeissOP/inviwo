@@ -35,6 +35,8 @@
 #include <inviwo/core/util/document.h>              // for Document
 #include <inviwo/core/util/glmmat.h>                // for mat4
 #include <inviwo/core/util/glmvec.h>                // for uvec3, ivec2
+#include <inviwo/core/datastructures/transferfunction.h>
+#include <modules/opengl/shader/shaderutils.h>
 
 #include <functional>  // for function
 #include <string>      // for string
@@ -77,6 +79,13 @@ public:
      * @return A copy with the same data and type as the original.
      */
     virtual Rasterization* clone() const = 0;
+
+    struct RaycastingState {
+        TransferFunction tf;
+        LightingState lighting;
+        int channel;
+    };
+    virtual const RaycastingState* getRaycastingState() const;
 };
 
 template <>
