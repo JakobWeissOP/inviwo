@@ -51,6 +51,12 @@
 #include <QMessageBox>
 #include <QApplication>
 
+#ifdef REG_INVIWOPYTHON3MODULE
+#ifndef INVIWO_ALL_DYN_LINK
+#include <inviwopy/inviwopy.h>
+#endif
+#endif
+
 int main(int argc, char** argv) {
 
     inviwo::util::configureCodePage();
@@ -92,7 +98,14 @@ int main(int argc, char** argv) {
 
     // Initialize application and register modules
     splashScreen.showMessage("Initializing modules...");
+    
     inviwoApp.registerModules(inviwo::getModuleList());
+
+#ifdef REG_INVIWOPYTHON3MODULE
+#ifndef INVIWO_ALL_DYN_LINK
+    inviwo::initInviwoPy();
+#endif
+#endif
 
     qtApp.processEvents();
 
