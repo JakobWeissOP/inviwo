@@ -75,7 +75,7 @@ protected:
     ImageInport entryPort_;
     ImageInport exitPort_;
     RasterizationOutport outport_;
-    std::vector<std::shared_ptr<const Volume>> enhancedVolumes_;
+    //std::vector<std::shared_ptr<const Volume>> enhancedVolumes_;
     std::shared_ptr<Shader> shader_;
     IsoTFProperty tf_;
     SimpleLightingProperty lighting_;
@@ -95,8 +95,10 @@ public:
     const RaycastingState* getRaycastingState() const;
 public:
     RaycastingState raycastState_;
-    std::vector<std::shared_ptr<const Volume>> enhancedVolumes_;
     std::shared_ptr<Shader> shader_;
+    std::shared_ptr<const Image> entry_;
+    std::shared_ptr<const Image> exit_;
+    std::shared_ptr<const Volume> volume_;
 };
 
 }  // namespace inviwo

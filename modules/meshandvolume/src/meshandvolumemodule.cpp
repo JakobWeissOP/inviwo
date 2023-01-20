@@ -58,8 +58,8 @@ MeshAndVolumeModule::MeshAndVolumeModule(InviwoApplication* app) : InviwoModule(
     // Ports
     // registerPort<MeshAndVolumeOutport>();
     // registerPort<MeshAndVolumeInport>();
-    registerPort<RasterizationInport>();
-    registerPort<RasterizationOutport>();
+    //registerPort<RasterizationInport>();
+    //registerPort<RasterizationOutport>();
 
     // PropertyWidgets
     // registerPropertyWidget<MeshAndVolumePropertyWidget, MeshAndVolumeProperty>("Default");

@@ -59,7 +59,7 @@ in fData {
 frag;
 
 #ifdef USE_FRAGMENT_LIST
-#include "oit/abufferlinkedlist.glsl"
+#include "oit/myabufferlinkedlist.glsl"
 
 // this is important for the occlusion query
 layout(early_fragment_tests) in;
@@ -67,20 +67,37 @@ layout(early_fragment_tests) in;
 layout(pixel_center_integer) in vec4 gl_FragCoord;
 #endif
 
+uniform VolumeParameters volumeParameters;
+uniform sampler3D volume;
+uniform ImageParameters entryParameters;
+uniform sampler2D entryColor;
+uniform sampler2D entryDepth;
+uniform sampler2D entryPicking;
+uniform sampler2D entryNormal;
 
+uniform ImageParameters exitParameters;
+uniform sampler2D exitColor;
+uniform sampler2D exitDepth;
+uniform int id;
 
+// How do I get id, parameters needed to pass into abufferVolumeRender?
 void main() {
-    vec4 fragColor = performShading();
+    vec4 fragColor = vec4(1.0, 0.0, 0.0, 1.0);
 
 #ifdef USE_FRAGMENT_LIST
     // fragment list rendering
-    if (fragColor.a > 0.0) {
+    if (id >= 0) {
         ivec2 coords = ivec2(gl_FragCoord.xy);
         float depth = gl_FragCoord.z;
-        abufferRender(coords, depth, fragColor);
+        float entry_Depth = texture(entryDepth, coords).x;
+        float exit_Depth = texture(exitDepth, coords).x;
+        vec3 entry_Color = texture(entryColor, coords).xyz;
+        vec3 exit_Color = texture(exitColor, coords).xyz;
+        abufferVolumeRender(coords, entry_Depth, entry_Color, id); // Entry
+        abufferVolumeRender(coords, exit_Depth, exit_Color, id); // Exit
     }
     discard;
-
+    
 #else
     // traditional rendering
     FragData0 = fragColor;

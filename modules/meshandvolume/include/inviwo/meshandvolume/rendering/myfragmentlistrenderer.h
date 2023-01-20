@@ -71,7 +71,8 @@ public:
     static bool supportsFragmentLists();
 
     typename Dispatcher<void()>::Handle onReload(std::function<void()> callback);
-    void setRaycastingState(const Rasterization::RaycastingState* rp);
+    void setRaycastingState(const Rasterization::RaycastingState* rp, int id);
+
 private:
     void buildShaders(bool hasBackground = false);
 

@@ -124,7 +124,7 @@ vec4 compressMeshPixelData(abufferMeshPixel p) {
 // Rendering function
 
 // The central function for the user-code
-uint abufferRender(ivec2 coords, float depth, vec4 color) {
+uint abufferMeshRender(ivec2 coords, float depth, vec4 color) {
     // coords.x=0; coords.y=0;
     // reserve space for pixel
     uint pixelIdx = dataCounterAtomicInc();

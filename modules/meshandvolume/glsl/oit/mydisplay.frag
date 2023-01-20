@@ -66,7 +66,7 @@ RaycastingInfo raycastingInfos[8] = RaycastingInfo[8](
 	RaycastingInfo(vec3(0.0), false),
 	RaycastingInfo(vec3(0.0), false),
 	RaycastingInfo(vec3(0.0), false));
-
+uniform CameraParameters camera;
 uniform float samplingRate;
 uniform sampler3D volumeSamplers[8];
 uniform sampler2D tfSamplers[8];
@@ -87,89 +87,31 @@ int getFragmentCount(uint pixelIdx);
 // Keeps only closest fragment
 vec4 resolveClosest(uint idx);
 
-// Resolve A-Buffer and blend sorted fragments
-//void main() {
-//    ivec2 coords = ivec2(gl_FragCoord.xy);
-//
-//    if (coords.x < 0 || coords.y < 0 || coords.x >= AbufferParams.screenWidth ||
-//        coords.y >= AbufferParams.screenHeight) {
-//        discard;
-//    }
-//
-//    uint pixelIdx = getPixelLink(coords);
-//
-//    if (pixelIdx > 0) {
-//        float backgroundDepth = 1.0;
-//#ifdef BACKGROUND_AVAILABLE
-//        // Assume the camera used to render the background has the same near and far plane,
-//        // so we can directly compare depths.
-//        vec2 texCoord = (gl_FragCoord.xy + 0.5) * reciprocalDimensions;
-//        backgroundDepth = texture(bgDepth, texCoord).x;
-//#endif  // BACKGROUND_AVAILABLE
-//
-//        // front-to-back shading
-//        vec4 color = vec4(0);
-//        uint lastPtr = 0;
-//        float depth = 1.0;
-//        abufferMeshPixel meshFragment = abufferMeshPixel(0, 1.0, vec4(0.0, 1.0, 1.0, 1.0));
-//        //abufferVolumePixel volumeFragment;
-//        vec4 nextFragment = selectionSortNext(pixelIdx, depth, lastPtr);
-//        int type = getPixelDataType(nextFragment);
-//        if(type == 0){ // Enters here
-//            meshFragment = uncompressMeshPixelData(nextFragment);
-//            depth = meshFragment.depth;
-//        }
-//        else if(type == 1){
-//            //volumeFragment = uncompressVolumePixelData(nextFragment);
-//            //depth = volumeFragment.depth;
-//        }
-//        gl_FragDepth = min(backgroundDepth, depth);
-//FragData0 = vec4(meshFragment.depth, 0.0, 0.0, 1.0);
-//        while (depth >= 0 && depth <= backgroundDepth) {
-//
-//            if(type == 0) {
-//                vec4 c = meshFragment.color;
-//                color.rgb = color.rgb + (1 - color.a) * c.a * c.rgb;
-//                color.a = color.a + (1 - color.a) * c.a;
-//                nextFragment = selectionSortNext(pixelIdx, meshFragment.depth, lastPtr);
-//            }
-//            else if(type == 1) {
-//                //raycastingInfos[volumeFragment.id].isActive = !raycastingInfos[volumeFragment.id].isActive; 
-//                //raycastingInfos[volumeFragment.id].samplePosition = volumeFragment.position;
-//                //nextFragment = selectionSortNext(pixelIdx, volumeFragment.depth, lastPtr);
-//            }
-//            float nextDepth;
-//            type = getPixelDataType(nextFragment);
-//            if(type == 0) {
-//                meshFragment = uncompressMeshPixelData(nextFragment);
-//                nextDepth = meshFragment.depth;
-//            } else if(type == 1) {
-//                //volumeFragment = uncompressVolumePixelData(nextFragment);
-//                //nextDepth = volumeFragment.depth;
-//            }
-//            for(int volumeIndex = 0; volumeIndex < 8; ++volumeIndex) {
-//                if(raycastingInfos[volumeIndex].isActive) {
-//                    //raycast(volumeIndex, depth, nextDepth);
-//                }
-//            }
-//        }
-//
-//        //FragData0 = color;
-//        PickingData = vec4(0.0, 0.0, 0.0, 1.0);
-//
-//    } else {  // no pixel found
-//        FragData0 = vec4(0.0);
-//        PickingData = vec4(0.0, 0.0, 0.0, 1.0);
-//    }
-//}
+vec3 screenToData(VolumeParameters volume, float depth, vec2 fragCoords) {
+    return vec3(volume.worldToData * camera.clipToWorld * vec4(fragCoords, depth, 1.0));
+}
 
-//vec4 myRaycast(int volumeIndex, float depth, float nextDepth) {
-//    vec3 samplePos = 
-//}
+vec4 myRaycast(vec4 color, int volumeIndex, vec3 entryData, vec3 exitData) {
+    vec4 res = color;
+    float t = 0.0;
+    vec3 rayDir = exitData - entryData;
+    float tEnd = length(exitData - entryData);
+    float tIncr = min(
+        tEnd, tEnd / (samplingRate * length(rayDir * volumeParameters[volumeIndex].dimensions)));
+    while(t < tEnd) {
+        vec3 samplePos = entryData * rayDir * t;
+        float values = texture(volumeSamplers[volumeIndex], samplePos).r;
+        t += tIncr;
+        //applyTF()
+        res += vec4(tIncr);
+    }
+    
+    return vec4(1.0, 0.0, 1.0, 1.0);
+}
 
 void main() {
     ivec2 coords = ivec2(gl_FragCoord.xy);
-
+    vec2 screenPos = gl_FragCoord.xy / vec2(AbufferParams.screenWidth, AbufferParams.screenHeight);
     if (coords.x < 0 || coords.y < 0 || coords.x >= AbufferParams.screenWidth ||
         coords.y >= AbufferParams.screenHeight) {
         discard;
@@ -235,7 +177,10 @@ void main() {
             //
             for(int volumeIndex = 0; volumeIndex < 8; ++volumeIndex) {
                 if(raycastingInfos[volumeIndex].isActive) {
-                    //raycast(volumeIndex, depth, nextDepth);
+                    vec3 viewDir = normalize(screenToData(volumeParameters[volumeIndex], nextDepth, screenPos) - screenToData(volumeParameters[volumeIndex], depth, screenPos));
+                    vec3 entryPos = screenToData(volumeParameters[volumeIndex], depth, screenPos);
+                    vec3 exitPos = screenToData(volumeParameters[volumeIndex], nextDepth, screenPos);
+                    color += myRaycast(color, volumeIndex, entryPos, exitPos); // depth + next = 0-1
                 }
             }
             depth = nextDepth; // Prevent infinite loop
