@@ -84,6 +84,7 @@ public:
         TransferFunction tf;
         LightingState lighting;
         int channel;
+        std::shared_ptr<const Volume> volume;
     };
     virtual const RaycastingState* getRaycastingState() const;
 };
