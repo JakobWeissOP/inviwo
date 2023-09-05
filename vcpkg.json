@@ -48,6 +48,7 @@
     "pegtl",
     "inja",
     "ffmpeg",
+    "warn",
     "zlib"
   ],
   "features": {
