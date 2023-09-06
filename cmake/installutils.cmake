@@ -228,7 +228,7 @@ endfunction()
 # A helper funtion to install module targets
 function(ivw_default_install_targets)
     foreach(target IN LISTS ARGN)
-        install(TARGETS ${target} EXPORT "${target}Targets"
+        install(TARGETS ${target} EXPORT "${target}-targets"
             RUNTIME        # DLLs, Exes, 
                 COMPONENT Application 
                 DESTINATION ${IVW_RUNTIME_INSTALL_DIR}
@@ -260,16 +260,25 @@ endfunction()
 
 # Make package for target(s) (with configure file etc) 
 # usage: ivw_make_package(<name> <list of targets>)
-function(ivw_install_module mod)
+function(ivw_install_module)
+    set(options "")
+    set(oneValueArgs MOD)
+    set(multiValueArgs "PACKAGES")
+    cmake_parse_arguments(ARG "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+
+    if(NOT ARG_MOD)
+        message(SEND_ERROR "Error missing MOD")
+    endif()
     include(CMakePackageConfigHelpers)
 
+    set(mod ${ARG_MOD})
     set(target ${${mod}_target})
 
     ivw_default_install_targets(${target})
 
     # install the configuration targets
-    install(EXPORT ${target}Targets
-        FILE ${target}Targets.cmake
+    install(EXPORT ${target}-targets
+        FILE ${target}-targets.cmake
         NAMESPACE inviwo::module::
         DESTINATION ${IVW_SHARE_INSTALL_DIR}/inviwo
         COMPONENT Development
@@ -278,22 +287,34 @@ function(ivw_install_module mod)
     # generate the config file that includes the exports
     set(NAME ${target})
     set(PACKAGES "")
+    set(POSTCONFIG "
+        if(NOT TARGET ${${mod}_alias})
+            add_library(${${mod}_alias} ALIAS inviwo::module::${target})
+        endif()
+    ")
 
     foreach(item IN LISTS ${mod}_dependencies)
-        ivw_mod_name_to_target_name(depTarget ${item})
-        list(APPEND PACKAGES "find_package(${depTarget} CONFIG REQUIRED)")
+        if(item STREQUAL "InviwoCoreModule")
+            list(APPEND PACKAGES "find_package(inviwo-core CONFIG REQUIRED)")
+        else()
+            ivw_mod_name_to_target_name(depTarget ${item})
+            list(APPEND PACKAGES "find_package(${depTarget} CONFIG REQUIRED)")
+        endif()
+    endforeach()
+    foreach(item IN LISTS RG_PACKAGES)
+        list(APPEND PACKAGES "find_package(${item} REQUIRED)")
     endforeach()
     ivw_join(";" "\n" PACKAGES ${PACKAGES})
 
-    if(EXISTS ${target}Config.cmake)
-        configure_file(${target}Config.cmake
-            "${CMAKE_CURRENT_BINARY_DIR}/cmake/${target}Config.cmake"
+    if(EXISTS ${target}-config.cmake)
+        configure_file(${target}-config.cmake
+            "${CMAKE_CURRENT_BINARY_DIR}/cmake/${target}-config.cmake"
             COPYONLY
         )
     else()
         configure_package_config_file(${IVW_CMAKE_TEMPLATES}/template-config.cmake
-            "${CMAKE_CURRENT_BINARY_DIR}/cmake/${target}Config.cmake"
-            INSTALL_DESTINATION "lib/cmake"
+            "${CMAKE_CURRENT_BINARY_DIR}/cmake/${target}-config.cmake"
+            INSTALL_DESTINATION ${IVW_SHARE_INSTALL_DIR}/inviwo
             NO_SET_AND_CHECK_MACRO
             NO_CHECK_REQUIRED_COMPONENTS_MACRO
             )
@@ -302,14 +323,14 @@ function(ivw_install_module mod)
     # generate the version file for the config file
     get_target_property(version ${target} VERSION)
     write_basic_package_version_file(
-        "${CMAKE_CURRENT_BINARY_DIR}/cmake/${target}ConfigVersion.cmake"
+        "${CMAKE_CURRENT_BINARY_DIR}/cmake/${target}-config-version.cmake"
         VERSION ${version}
         COMPATIBILITY SameMajorVersion
     )
 
     install(FILES
-        "${CMAKE_CURRENT_BINARY_DIR}/cmake/${target}Config.cmake"
-        "${CMAKE_CURRENT_BINARY_DIR}/cmake/${target}ConfigVersion.cmake"
+        "${CMAKE_CURRENT_BINARY_DIR}/cmake/${target}-config.cmake"
+        "${CMAKE_CURRENT_BINARY_DIR}/cmake/${target}-config-version.cmake"
         DESTINATION ${IVW_SHARE_INSTALL_DIR}/inviwo
         COMPONENT Development
     )
@@ -317,8 +338,8 @@ endfunction()
 
 function(ivw_install_helper)
     set(options "")
-    set(oneValueArgs TARGET NAMESPACE DESTINATION)
-    set(multiValueArgs "")
+    set(oneValueArgs TARGET NAMESPACE DESTINATION POSTCONFIG)
+    set(multiValueArgs "PACKAGES")
     cmake_parse_arguments(ARG "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
     if(NOT ARG_TARGET)
@@ -332,12 +353,15 @@ function(ivw_install_helper)
         message(SEND_ERROR "Error missing DESTINATION")
     endif()
 
+    if(ARG_POSTCONFIG)
+    endif()
+
     include(CMakePackageConfigHelpers)
 
     ivw_default_install_targets(${ARG_TARGET})
     
-    install(EXPORT ${ARG_TARGET}Targets
-        FILE ${ARG_TARGET}Targets.cmake
+    install(EXPORT ${ARG_TARGET}-targets
+        FILE ${ARG_TARGET}-targets.cmake
         NAMESPACE ${ARG_NAMESPACE}::
         DESTINATION ${IVW_SHARE_INSTALL_DIR}/${ARG_DESTINATION}
         COMPONENT Development
@@ -345,14 +369,23 @@ function(ivw_install_helper)
     
     set(NAME ${ARG_TARGET})
     set(PACKAGES "")
+    set(POSTCONFIG "")
+    if(ARG_POSTCONFIG)
+        set(POSTCONFIG ${ARG_POSTCONFIG})
+    endif()
+    foreach(item IN LISTS ARG_PACKAGES)
+        list(APPEND PACKAGES "find_package(${item} CONFIG REQUIRED)")
+    endforeach()
+    ivw_join(";" "\n" PACKAGES ${PACKAGES})
+
     configure_package_config_file(${IVW_CMAKE_TEMPLATES}/template-config.cmake
-        "${CMAKE_CURRENT_BINARY_DIR}/cmake/${ARG_TARGET}Config.cmake"
+        "${CMAKE_CURRENT_BINARY_DIR}/cmake/${ARG_TARGET}-config.cmake"
         INSTALL_DESTINATION ${IVW_SHARE_INSTALL_DIR}/${ARG_DESTINATION}
         NO_SET_AND_CHECK_MACRO
         NO_CHECK_REQUIRED_COMPONENTS_MACRO
     )
     install(FILES
-        "${CMAKE_CURRENT_BINARY_DIR}/cmake/${ARG_TARGET}Config.cmake"
+        "${CMAKE_CURRENT_BINARY_DIR}/cmake/${ARG_TARGET}-config.cmake"
         DESTINATION ${IVW_SHARE_INSTALL_DIR}/${ARG_DESTINATION}
         COMPONENT Development
     )

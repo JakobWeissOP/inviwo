@@ -31,6 +31,7 @@
 #include <inviwo/qt/applicationbase/qtlocale.h>
 #include <inviwo/core/common/defaulttohighperformancegpu.h>
 #include <inviwo/core/common/inviwoapplication.h>
+#include <inviwo/core/common/modulemanager.h>
 #include <inviwo/core/util/commandlineparser.h>
 #include <inviwo/core/util/filesystem.h>
 #include <inviwo/core/util/localetools.h>
@@ -47,6 +48,7 @@
 
 #include <sstream>
 #include <algorithm>
+#include <array>
 
 #include <QMessageBox>
 #include <QApplication>
@@ -98,8 +100,20 @@ int main(int argc, char** argv) {
 
     // Initialize application and register modules
     splashScreen.showMessage("Initializing modules...");
-    
-    inviwoApp.registerModules(inviwo::getModuleList());
+
+    auto staticModules = inviwo::getModuleList();
+
+    std::array<std::filesystem::path, 1> searchPaths = {
+        {"/Users/peter/Documents/Inviwo/build/devmodule/Debug"}};
+
+    auto runtimeModules = inviwoApp.getModuleManager().findRuntimeModules(
+        searchPaths, inviwo::ModuleManager::getEnabledFilter(),
+        inviwoApp.getModuleManager().isRuntimeModuleReloadingEnabled());
+
+    staticModules.insert(staticModules.end(), std::make_move_iterator(runtimeModules.begin()),
+                         std::make_move_iterator(runtimeModules.end()));
+
+    inviwoApp.registerModules(std::move(staticModules));
 
 #ifdef REG_INVIWOPYTHON3MODULE
 #ifndef INVIWO_ALL_DYN_LINK

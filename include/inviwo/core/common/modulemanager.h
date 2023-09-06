@@ -43,6 +43,7 @@
 #include <set>
 #include <vector>
 #include <memory>
+#include <span>
 #include <warn/pop>
 
 namespace inviwo {
@@ -87,6 +88,11 @@ public:
      */
     void registerModules(RuntimeModuleLoading, std::function<bool(std::string_view)> filter =
                                                    ModuleManager::getEnabledFilter());
+
+    std::vector<std::unique_ptr<InviwoModuleFactoryObject>> findRuntimeModules(
+        std::span<std::filesystem::path> searchPaths,
+        std::function<bool(std::string_view)> filter,
+        bool runtimeReloading = false);
 
     /**
      * \brief Removes all modules not marked as protected by the application.
