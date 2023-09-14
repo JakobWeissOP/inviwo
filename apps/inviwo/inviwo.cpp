@@ -101,19 +101,23 @@ int main(int argc, char** argv) {
     // Initialize application and register modules
     splashScreen.showMessage("Initializing modules...");
 
-    auto staticModules = inviwo::getModuleList();
+    std::vector<inviwo::ModuleContainer> inviwoModules;
 
+    auto staticModules = inviwo::getModuleList();
+    for (auto& item : staticModules) {
+        inviwoModules.emplace_back(std::move(item));
+    }
+    
     std::array<std::filesystem::path, 1> searchPaths = {
         {"/Users/peter/Documents/Inviwo/build/devmodule/Debug"}};
 
     auto runtimeModules = inviwoApp.getModuleManager().findRuntimeModules(
         searchPaths, inviwo::ModuleManager::getEnabledFilter(),
         inviwoApp.getModuleManager().isRuntimeModuleReloadingEnabled());
-
-    staticModules.insert(staticModules.end(), std::make_move_iterator(runtimeModules.begin()),
+    inviwoModules.insert(inviwoModules.end(), std::make_move_iterator(runtimeModules.begin()),
                          std::make_move_iterator(runtimeModules.end()));
 
-    inviwoApp.registerModules(std::move(staticModules));
+    inviwoApp.getModuleManager().registerModules(std::move(inviwoModules));
 
 #ifdef REG_INVIWOPYTHON3MODULE
 #ifndef INVIWO_ALL_DYN_LINK
