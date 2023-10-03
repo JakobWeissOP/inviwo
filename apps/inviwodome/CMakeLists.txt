@@ -17,15 +17,6 @@ set(SOURCE_FILES
 )
 ivw_group("Source Files" ${SOURCE_FILES})
 
-ivw_retrieve_all_modules(enabled_modules)
-# Remove Qt stuff from list
-foreach(module ${enabled_modules})
-    string(TOUPPER ${module} u_module)
-    if(u_module MATCHES "QT+")
-        list(REMOVE_ITEM enabled_modules ${module})
-    endif()
-endforeach()
-
 add_executable(inviwo-dome ${HEADER_FILES} ${SOURCE_FILES})
 target_include_directories(inviwo-dome PUBLIC include)
 
@@ -35,6 +26,8 @@ find_package(Tracy CONFIG REQUIRED)
     
 target_link_libraries(inviwo-dome 
     PRIVATE
+        inviwo::core
+        inviwo::sys
         Tracy::TracyClient
         sgct::sgct
         glfw
@@ -49,7 +42,6 @@ set_target_properties(inviwo-dome PROPERTIES
     TRACY_EXE ${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/tools/tracy/Tracy.exe
 )
 
-ivw_configure_application_module_dependencies(inviwo-dome ${enabled_modules})
 ivw_define_standard_definitions(inviwo-dome inviwo-dome)
 ivw_define_standard_properties(inviwo-dome)
 
