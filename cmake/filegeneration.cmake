@@ -144,14 +144,10 @@ function(ivw_private_generate_module_registration_files)
 
     foreach(mod IN LISTS ARG_MODULES)
         list(APPEND static_headers
-            "#ifdef REG_${mod}\n"
             "#include <${${mod}_sharedLibInc}>\n"
-            "#endif\n"
         )
         list(APPEND static_functions
-            "    #ifdef REG_${mod}\n" 
             "    modules.emplace_back(create${${mod}_class}())__SEMICOLON__\n"
-            "    #endif\n"
         )
     endforeach()
 
