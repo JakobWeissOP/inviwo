@@ -398,9 +398,6 @@ function(ivw_install_helper)
         message(SEND_ERROR "Error missing DESTINATION")
     endif()
 
-    if(ARG_POSTCONFIG)
-    endif()
-
     include(CMakePackageConfigHelpers)
 
     ivw_default_install_targets(${ARG_TARGET})
@@ -413,8 +410,8 @@ function(ivw_install_helper)
     )
     
     set(NAME ${ARG_TARGET})
-    set(PACKAGES "")
-    set(POSTCONFIG "")
+    set(PACKAGES "")   # Used in template-config.cmake
+    set(POSTCONFIG "") # Used in template-config.cmake
     if(ARG_POSTCONFIG)
         set(POSTCONFIG ${ARG_POSTCONFIG})
     endif()
