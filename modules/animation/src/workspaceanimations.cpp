@@ -190,9 +190,10 @@ void WorkspaceAnimations::erase(const_iterator position) {
         mainAnimation_.set(**newMain);
     }
     auto anim = std::move(*pos);
+    const auto index = std::distance(animations_.begin(), pos);
     animations_.erase(pos);
 
-    onChanged_.invoke(std::distance(animations_.begin(), pos), *anim);
+    onChanged_.invoke(index, *anim);
 }
 
 void WorkspaceAnimations::clear() {
